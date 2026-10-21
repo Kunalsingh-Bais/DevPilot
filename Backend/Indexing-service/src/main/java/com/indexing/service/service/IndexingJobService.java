@@ -7,6 +7,8 @@ import com.indexing.service.repository.IndexedRepositoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class IndexingJobService {
 
@@ -60,6 +62,13 @@ public class IndexingJobService {
         repo.setStatus(IndexingStatus.FAILED);
         repo.setErrorMessage(errorMessage);
         return indexedRepositoryRepository.save(repo);
+    }
+
+    // Returns the current indexing status for one repository
+    @Transactional(readOnly = true)
+    public IndexedRepository getStatus(String githubOwner, String repoName) {
+        return indexedRepositoryRepository.findByGithubOwnerAndRepoName(githubOwner, repoName)
+                .orElseThrow(() -> new NoSuchElementException("No indexing record for " + githubOwner + "/" + repoName));
     }
 
 // ------ Helper Methods ------
