@@ -60,6 +60,15 @@ public class GithubClient {
                 "Tree not found for " + githubOwner + "/" + repoName);
     }
 
+    // Gets the raw content of the file, identified by its blob SHA.
+    public GithubBlob getBlob(String githubOwner, String repoName, String blobSha) {
+        return call(() -> restClient.get()
+                  .uri("/repos/{githubOwner}/{repoName}/git/blobs/{sha}}", githubOwner, repoName, blobSha)
+                  .retrieve()
+                  .body(GithubBlob.class),
+                "File not found for blob " + blobSha);
+    }
+
     // Runs one GitHub request and turns any failure into an error our service understands.
     private <T> T call(Supplier<T> request, String notFoundMessage) {
         try {
