@@ -38,7 +38,7 @@ public class FileContentService {
         // Check the size before decoding
         if (blob.size() > MAX_FILE_BYTES) {
             throw new GithubApiException(HttpStatus.UNPROCESSABLE_CONTENT,
-                    "File is larger that " + (MAX_FILE_BYTES/ 1024) + " KB and was skipped.");
+                    "File is larger than " + (MAX_FILE_BYTES/ 1024) + " KB and was skipped.");
         }
 
         if (blob.content() == null || !"base64".equals(blob.encoding())) {
