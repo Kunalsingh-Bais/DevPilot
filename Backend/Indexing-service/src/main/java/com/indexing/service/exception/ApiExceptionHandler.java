@@ -21,4 +21,10 @@ public class ApiExceptionHandler {
     public ProblemDetail handleConflict(IllegalStateException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
+
+    // Problem while calling repo-service
+    @ExceptionHandler(RepositoryServiceException.class)
+    public ProblemDetail handleRepositoryService(RepositoryServiceException ex) {
+        return ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
+    }
 }
