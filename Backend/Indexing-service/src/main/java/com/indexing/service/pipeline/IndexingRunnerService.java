@@ -76,7 +76,7 @@ public class IndexingRunnerService {
     }
 
 // ------ Method 2: Filters the files, reads and split into chunks ------
-     private List<SourceChunk> readChunks(String githubOwner, String repoName, RepoFileListing listing) {
+    private List<SourceChunk> readChunks(String githubOwner, String repoName, RepoFileListing listing) {
         if (listing.files().size() > MAX_FILES) {
             throw new IllegalStateException("Repository has " + listing.files().size() +
                     " files, which is above the limit of " + MAX_FILES + ".");
@@ -84,9 +84,15 @@ public class IndexingRunnerService {
 
         List<SourceChunk> chunks = new ArrayList<>();
 
+        // Counters for the one summary line at the end of the run.
+        int filteredOut = 0;   // skipped by FileFilter (path, type, size)
+        int refused = 0;       // repo-service said "skip this file"
+        int read = 0;          // file text received and chunked
+
         for (RepoFileEntry file : listing.files()) {
             // Decide from the path and size first, so skipped file costs no GitHub request.
             if (!FileFilter.evaluate(file.path(), file.size()).keep()) {
+                filteredOut++;
                 continue;
             }
 
@@ -95,9 +101,11 @@ public class IndexingRunnerService {
 
             // Check if content is empty , if empty skip it
             if (content.isEmpty()) {
+                refused++;
                 continue;
             }
 
+            read++;
             for (TextChunk piece: CodeChunker.split(content.get().content())) {
                 if (chunks.size() >= MAX_CHUNKS) {
                     throw new IllegalStateException("Repository produces more than " + MAX_CHUNKS + " chunks, which is above the limit.");
@@ -106,8 +114,13 @@ public class IndexingRunnerService {
                 chunks.add(new SourceChunk(file.path(), piece.startLine(), piece.endLine(), piece.content()));
             }
         }
+
+        // One line per run. It shows where files were lost, without logging every file.
+        log.info("FILE SUMMARY for {}/{}: filteredOut={}, refused={}, read={}, chunks={}",
+                githubOwner, repoName, filteredOut, refused, read, chunks.size());
+
         return chunks;
-     }
+    }
 
 // ------ Method 3: Sends the chunks texts to the embedding model in batches ------
     // then pairs each vector with its chunk
