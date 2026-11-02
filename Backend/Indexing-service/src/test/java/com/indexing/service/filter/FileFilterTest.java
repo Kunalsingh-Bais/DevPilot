@@ -69,4 +69,18 @@ FileFilterTest {
     void skipsPathThatTryToLeaveTheRepository() {
         assertThat(FileFilter.evaluate("../../etc/passwd", SMALL).keep()).isFalse();
     }
+
+    @Test
+    void keepsExtensionlessRootFilesLikeReadme() {
+        // README has no dot, but it is a normal and useful text file in most repositories.
+        assertThat(FileFilter.evaluate("README", SMALL).keep()).isTrue();
+        assertThat(FileFilter.evaluate("LICENSE", SMALL).keep()).isTrue();
+    }
+
+    @Test
+    void stillSkipsOtherHiddenAndUnknownFilesWithoutExtension() {
+        // The allowlist covers only known names. Other extensionless files are still skipped.
+        assertThat(FileFilter.evaluate(".gitignore", SMALL).keep()).isFalse();
+        assertThat(FileFilter.evaluate("scripts/unknowntool", SMALL).keep()).isFalse();
+    }
 }

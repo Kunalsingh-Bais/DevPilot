@@ -22,6 +22,10 @@ public final class FileFilter {
     private static final Set<String> EXCLUDED_FILE_NAMES = Set.of("package-lock.json",
             "yarn.lock", "pnpm-lock.yaml", "composer.lock", "Pipfile.lock");
 
+    // Common root files without extensions that we want to index
+    private static final Set<String> ALLOWED_EXACT_FILENAMES = Set.of(
+            "readme", "license", "dockerfile", "makefile", "changelog");
+
     // Constructor
     private FileFilter() {
     }
@@ -42,6 +46,7 @@ public final class FileFilter {
         }
 
         String fileName = parts[parts.length - 1];
+        String lowerFileName = fileName.toLowerCase(Locale.ROOT);
 
         // Check every folder on the path, not only the first one.
         for (int i=0; i<parts.length-1; i++) {
@@ -57,6 +62,14 @@ public final class FileFilter {
         if (isLikelySecret(fileName)) {
             // Secrets are never sent to an AI provider, even when they are inside the repository.
             return FileFilterResult.skip("may contain secrets");
+        }
+
+        // Allow common extensionless files like README or LICENSE
+        if (ALLOWED_EXACT_FILENAMES.contains(lowerFileName)) {
+            if (sizeBytes > MAX_FILE_BYTES) {
+                return FileFilterResult.skip("file larger than " + (MAX_FILE_BYTES / 1024) + " KB");
+            }
+            return FileFilterResult.Keep();
         }
 
         // Find the last dot. A dot at position 0 means a hidden file such as ".gitignore".
