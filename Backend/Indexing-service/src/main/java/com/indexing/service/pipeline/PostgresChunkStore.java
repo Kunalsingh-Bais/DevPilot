@@ -1,5 +1,6 @@
 package com.indexing.service.pipeline;
 
+import com.indexing.service.embedding.VectorText;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,24 +51,8 @@ public class PostgresChunkStore implements ChunkStore{
             ps.setInt(4, source.endLine());
             ps.setString(5, source.content());
             ps.setString(6, commitSha);
-            ps.setString(7, toVectorLiteral(chunk.embedding()));
+            ps.setString(7, VectorText.toLiteral(chunk.embedding()));
         });
     }
 
-// ------ Turns a float array into pgvector's text format, for example "[0.1,0.2,0.3]" ------
-    static String toVectorLiteral(float[] values) {
-        StringBuilder text = new StringBuilder("[");
-        for (int i=0; i < values.length; i++) {
-
-            // NaN and infinity are not valid numbers in a vector, so refuse them early.
-            if (!Float.isFinite(values[i])) {
-                throw new IllegalArgumentException("Embedding contains a value that is not a finite number.");
-            }
-            if (i > 0) {
-                text.append(',');
-            }
-            text.append(values[i]);
-        }
-        return text.append(']').toString();
-    }
 }
