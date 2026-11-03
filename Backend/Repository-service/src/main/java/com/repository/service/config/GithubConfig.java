@@ -18,7 +18,7 @@ public class GithubConfig {
                 .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
                 .defaultHeader("User-Agent", "devpilot-repo-service");
 
-        if (props.token() != null && props.token().isBlank()) {
+        if (props.token() != null && !props.token().isBlank()) {
             builder.defaultHeader("Authorization", "Bearer " + props.token());
         }
         return builder.build();
