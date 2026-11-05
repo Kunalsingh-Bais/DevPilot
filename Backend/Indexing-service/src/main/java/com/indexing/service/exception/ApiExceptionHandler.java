@@ -27,4 +27,10 @@ public class ApiExceptionHandler {
     public ProblemDetail handleRepositoryService(RepositoryServiceException ex) {
         return ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
     }
+
+    // Bad input from the caller, such as an empty question or a limit out of range
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleBadInput(IllegalArgumentException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
 }
