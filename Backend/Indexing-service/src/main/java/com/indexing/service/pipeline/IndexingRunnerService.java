@@ -132,7 +132,9 @@ public class IndexingRunnerService {
 
             List<SourceChunk> batch = chunks.subList(from, to);
 
-            List<String> texts = batch.stream().map(SourceChunk::content).toList();
+            List<String> texts = batch.stream()
+                    .map(c -> "File: " + c.filePath() + "\n" + c.content())
+                    .toList();
             List<float[]> vectors = embeddingProvider.embed(texts);
 
             // Each text must get exactly one vector, Otherwise the pairs would be wrong
