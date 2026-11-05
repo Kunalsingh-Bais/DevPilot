@@ -1,0 +1,14 @@
+# Evaluation set for retrieval.
+# Format: question | expected file name (or full path)
+# Each question must be answered by a file in spring-projects/spring-petclinic
+
+Where are owners created and saved? | OwnerController.java
+Which class represents a pet's visits? | Visit.java
+Where is a new pet added to an owner? | PetController.java
+Where is new owner saved in the application? | OwnerController.java
+Which class defines the owner repository database operations? | OwnerRepository.java
+Which class handles requests related to veterinarians? | VetController.java
+Where is the veterinarian entity defined? | Vet.java
+Where is the pet entity defined? | Pet.java
+Which class handles the application's welcome page? | WelcomeController.java
+Which class is responsible for handling veterinarian information? | VetRepository.java
