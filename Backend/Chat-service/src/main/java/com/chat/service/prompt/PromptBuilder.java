@@ -6,7 +6,7 @@ import java.util.List;
 public final class PromptBuilder {
 
     // The exact text used when the code does not contain the answer.
-    public static final String NOT_FOUND_TEXT = "I could not find this int the indexed code.";
+    public static final String NOT_FOUND_TEXT = "I could not find this in the indexed code.";
 
     // The rules we give the model.
     static final String SYSTEM_RULES = """
