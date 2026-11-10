@@ -5,14 +5,15 @@ import com.chat.service.client.IndexingServiceClient;
 import com.chat.service.client.IndexingServiceClient.RepositoryStatus;
 import com.chat.service.client.IndexingServiceClient.SearchHit;
 import com.chat.service.dto.AskResponse;
-import com.chat.service.dto.AskResponse.Citation;
 import com.chat.service.llm.LlmClient;
 import com.chat.service.prompt.LabeledChunk;
 import com.chat.service.prompt.PromptBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 // The question-answering flow. It holds the rules; the controller only passes requests in.
 @Service
@@ -57,7 +58,7 @@ public class AnswerService {
 
         // if nothing was found, say so without calling the model
         if (hits.isEmpty()) {
-            return new AskResponse(PromptBuilder.NOT_FOUND_TEXT, status.commitSha(), List.of());
+            return new AskResponse(PromptBuilder.NOT_FOUND_TEXT, status.commitSha(), List.of(), List.of());
         }
 
         // Step 4: label the chunks C1, C2, ... in the order they were found
@@ -73,12 +74,12 @@ public class AnswerService {
         // Step 6: Remove any citation label we did not give the model
         List<String> allowedLabels = labeled.stream().map(LabeledChunk::label).toList();
         CitationValidator.Result validated = CitationValidator.validate(rawAnswer, allowedLabels);
-        
+
         // Step 7: turn each used label into a link to the exact lines on GitHub
-        List<Citation> citations = new ArrayList<>();
+        List<AskResponse.Citation> citations = new ArrayList<>();
         for (String label : validated.usedLabels()) {
             SearchHit hit = findByLabel(labeled, label);
-            citations.add(new Citation(
+            citations.add(new AskResponse.Citation(
                     label,
                     hit.filePath(),
                     hit.startLine(),
@@ -86,7 +87,19 @@ public class AnswerService {
                     githubUrl(githubOwner, repoName, status.commitSha(), hit)));
         }
 
-        return new AskResponse(validated.text(), status.commitSha(), citations);
+        // List every chunk the search found, and mark the ones the answer cited
+        Set<String> usedLabels = new HashSet<>(validated.usedLabels());
+        List<AskResponse.Source> sources = labeled.stream()
+                .map(l -> new AskResponse.Source(
+                        l.label(),
+                        l.chunk().filePath(),
+                        l.chunk().startLine(),
+                        l.chunk().endLine(),
+                        githubUrl(githubOwner, repoName, status.commitSha(), l.chunk()),
+                        usedLabels.contains(l.label())))
+                .toList();
+
+        return new AskResponse(validated.text(), status.commitSha(), citations, sources);
     }
 
     // Finds the chunk that carries a given label. The label always exists, because we validated it.
