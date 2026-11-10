@@ -73,7 +73,7 @@ public class AnswerService {
         // Step 6: Remove any citation label we did not give the model
         List<String> allowedLabels = labeled.stream().map(LabeledChunk::label).toList();
         CitationValidator.Result validated = CitationValidator.validate(rawAnswer, allowedLabels);
-
+        
         // Step 7: turn each used label into a link to the exact lines on GitHub
         List<Citation> citations = new ArrayList<>();
         for (String label : validated.usedLabels()) {

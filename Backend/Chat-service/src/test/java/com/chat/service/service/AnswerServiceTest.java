@@ -48,7 +48,7 @@ class AnswerServiceTest {
         when(indexingServiceClient.getStatus(GITHUB_OWNER, REPO_NAME))
                 .thenReturn(new RepositoryStatus(1L, GITHUB_OWNER, REPO_NAME, "COMPLETED", SHA, null));
 
-        when(indexingServiceClient.search(GITHUB_OWNER, REPO_NAME, QUESTION, 5))
+        when(indexingServiceClient.search(GITHUB_OWNER, REPO_NAME, QUESTION, 8))
                 .thenReturn(List.of());
 
         AtomicBoolean modelCalled = new AtomicBoolean(false);
@@ -69,7 +69,7 @@ class AnswerServiceTest {
         when(indexingServiceClient.getStatus(GITHUB_OWNER, REPO_NAME))
                 .thenReturn(new RepositoryStatus(1L, GITHUB_OWNER, REPO_NAME, "COMPLETED", SHA, null));
 
-        when(indexingServiceClient.search(GITHUB_OWNER, REPO_NAME, QUESTION, 5)).thenReturn(List.of(
+        when(indexingServiceClient.search(GITHUB_OWNER, REPO_NAME, QUESTION, 8)).thenReturn(List.of(
                 new SearchHit(1L, "src/OwnerController.java", 84, 131, "code A", 0.38),
                 new SearchHit(2L, "src/OwnerRepository.java", 1, 39, "code B", 0.36)));
 
