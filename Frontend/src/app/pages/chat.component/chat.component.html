@@ -1,0 +1,98 @@
+<main class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-4xl space-y-8 px-4 py-10">
+
+    <header>
+      <h1 class="text-3xl font-bold">devPilot</h1>
+      <p class="text-slate-400">
+        Ask a question about an indexed repository. Every answer shows the code it was based on.
+      </p>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="ask()"
+          class="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6">
+          
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="block">
+          <span class="text-sm text-slate-400">GitHub Owner</span>
+          <input formControlName="githubOwner" class="mt-1 w-full rounded-md  border border-slate-700 bg-slate-950 px-3 py-2"/>
+        </label>
+
+        <label class="block">
+          <span class="text-sm text-slate-400">Repository name</span>
+          <input formControlName="repoName" class="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2" />
+        </label>
+      </div>    
+
+      <label class="block">
+        <span class="text-sm text-slate-400">Question</span>
+        <textarea formControlName="question" rows="3" placeholder="Where are owners created and saved?" class="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2"></textarea>
+      </label>
+
+      <!-- Disabled while a question is running, so it can't be sent twice. -->
+      <button type="submit" [disabled]="loading()" class="rounded-md 
+        bg-indigo-600 px-5 py-2 font-medium hover:bg-indigo-500 disabled:opacity-50">
+        {{ loading() ? 'Thinking...' : 'Ask' }}
+      </button>
+    </form>
+
+    @if (loading()) {
+      <p class="text-slate-400">
+        Searching the code and asking the model. The first answer can take a minute or two while Ollama loads.
+      </p>
+    }
+
+    @if (error()) {
+      <div class="rounded-md border border-red-800 bg-red-950 p-4 text-red-200">
+        {{ error() }}
+      </div>
+    }
+
+    @if (response(); as r) {
+      <section class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+        <h2 class="mb-3 text-xl font-semibold">Answer</h2>
+ 
+        <p class="whitespace-pre-wrap leading-relaxed">{{ r.answer }}</p>
+        <p class="mt-4 text-xs text-slate-500">Based on commit {{ r.commitSha }}</p>
+      </section>
+
+      <section class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+        <h2 class="mb-3 text-xl font-semibold">Citations</h2>
+
+        @if (r.citations.length === 0) {
+          <p class="text-slate-400">This answer has no citations.</p>
+        }
+
+        <ul class="space-y-2">
+          @for (c of r.citations; track c.label) {
+            <li>
+              <a [href]="c.githubUrl" target="_blank" rel="noopener noreferrer" class="text-indigo-300 hover:underline">
+                [{{ c.label }}] {{ c.filePath }} : {{ c.startLine }}-{{ c.endLine }}
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- A collapsible list of everything the search found, so the user sees the evidence -->
+      <details class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+        <summary class="cursor-pointer text-xl font-semibold">
+          Retrieved code ({{ r.sources.length }})
+        </summary>
+
+        <ul class="mt-4 space-y-2">
+          @for (s of r.sources; track s.label) {
+            <li class="flex items-center gap-3">
+              <span class="rounded bg-slate-800 px-2 py-0.5 text-xs">{{ s.label }}</span>
+              @if (s.cited) {
+                <span class="rounded bg-emerald-900 px-2 py-0.5 text-xs text-emerald-200">cited</span>
+              }
+              <a [href]="s.githubUrl" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:underline">
+                {{ s.filePath }}:{{ s.startLine }}-{{ s.endLine }}
+              </a>
+            </li>
+          }
+        </ul>
+      </details>
+    }
+  </div>
+</main>
