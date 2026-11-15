@@ -56,8 +56,10 @@ public class SecurityConfig {
             .oauth2Login(oauth -> oauth
                     // The login starts at /api/auth/login/github (instead of the default /oauth2/authorization/github).
                     .authorizationEndpoint(a -> a.baseUri("/api/auth/login"))
-                    // After login, send the browser to the Angular app.
-                    .defaultSuccessUrl(frontendUrl, true))
+                    // After login, send the browser to the dashboard page in the Angular app.
+                    .defaultSuccessUrl(frontendUrl + "/dashboard", true)
+                    // if failed , send to login page
+                    .failureUrl(frontendUrl + "/login?error"))
 
             // Logout is a POST, which the CSRF check protects. The response is 204 with no redirect,
             .logout(logout -> logout
