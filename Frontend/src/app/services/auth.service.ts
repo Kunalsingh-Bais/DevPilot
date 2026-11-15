@@ -39,16 +39,30 @@ export class AuthService {
     window.location.href = '/api/auth/login/github';
   }
 
-// ------ Ends the server session, then clears the signed-in state in the  browser ------  
+// ------ Ends the server session, then clears the signed-in state in the  browser ------    
   async logout(): Promise<void> {
+    const csrfCookie = document.cookie
+      .split('; ')
+      .find(cookie => cookie.startsWith('XSRF-TOKEN='));
+
+    const csrfToken = csrfCookie
+      ? decodeURIComponent(csrfCookie.split('=')[1])
+      : '';
+
     try {
-      await firstValueFrom(this.http.post<void>('/api/auth/login', null));
-    }
-    catch (err) {
-      // if the server call fails, the screen should show signed out.
-    }
-    finally {
+      await firstValueFrom(
+        this.http.post<void>('/api/auth/logout', null, {
+          headers: {
+            'X-XSRF-TOKEN': csrfToken
+          }
+        })
+      );
+
       this.user.set(null);
+      window.location.href = '/login';
+
+    } catch (err) {
+      console.error('Logout failed:', err);
     }
   }
 }
