@@ -26,7 +26,7 @@ class ChunkRetrieverTest {
 
     @Test
     void rejectsBlankQuestionsBeforeEmbedding() {
-        assertThatThrownBy(() -> chunkRetrieverService.search("spring-projects", "spring-petclinic", "  ", 5))
+        assertThatThrownBy(() -> chunkRetrieverService.search("alice","spring-projects", "spring-petclinic", "  ", 5))
                 .isInstanceOf(IllegalArgumentException.class);
         // Empty questions must not cost an embedding call.
         verifyNoInteractions(embeddingProvider);
@@ -34,7 +34,7 @@ class ChunkRetrieverTest {
 
     @Test
     void rejectsLimitAboveMaximum() {
-        assertThatThrownBy(() -> chunkRetrieverService.search("spring-projects", "spring-petclinic", "login", 21))
+        assertThatThrownBy(() -> chunkRetrieverService.search("alice","spring-projects", "spring-petclinic", "login", 21))
                 .isInstanceOf(IllegalArgumentException.class);
 
         verifyNoInteractions(jdbcTemplate);

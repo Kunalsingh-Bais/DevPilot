@@ -30,13 +30,13 @@ public class IndexingJobServiceTest {
     @Test
     void startIndexingCreatesNewRepositoryAndMarksItRunning() {
         // No row exists yet, and save returns whatever it receives
-        when(repositoryRepository.findByGithubOwnerAndRepoName("spring-projects", "spring-boot"))
+        when(repositoryRepository.findByUserLoginAndGithubOwnerAndRepoName("alice","spring-projects", "spring-boot"))
                 .thenReturn(Optional.empty());
         when(repositoryRepository.save(any(IndexedRepository.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        IndexedRepository result = service.startIndexing("spring-projects","spring-boot");
+        IndexedRepository result = service.startIndexing("alice","spring-projects","spring-boot");
 
         // Assert
         assertThat(result.getStatus()).isEqualTo(IndexingStatus.RUNNING);
@@ -45,20 +45,20 @@ public class IndexingJobServiceTest {
     @Test
     void startIndexingFailsWhenAlreadyRunning() {
         // repository that is already running
-        IndexedRepository running = new IndexedRepository("spring-projects", "spring-boot");
+        IndexedRepository running = new IndexedRepository("alice","spring-projects", "spring-boot");
         running.setStatus(IndexingStatus.RUNNING);
 
-        when(repositoryRepository.findByGithubOwnerAndRepoName("spring-projects", "spring-boot"))
+        when(repositoryRepository.findByUserLoginAndGithubOwnerAndRepoName("alice","spring-projects", "spring-boot"))
                 .thenReturn(Optional.of(running));
 
         // Act and Assert: starting again must be rejected
-        assertThatThrownBy(() -> service.startIndexing("spring-projects", "spring-boot"))
+        assertThatThrownBy(() -> service.startIndexing("alice","spring-projects", "spring-boot"))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void markCompletedStoresCommitAndMarksCompleted() {
-        IndexedRepository running = new IndexedRepository("spring-projects", "spring-boot");
+        IndexedRepository running = new IndexedRepository("alice","spring-projects", "spring-boot");
         running.setStatus(IndexingStatus.RUNNING);
 
         when(repositoryRepository.findById(1L)).thenReturn(Optional.of(running));
@@ -76,7 +76,7 @@ public class IndexingJobServiceTest {
     @Test
     void markCompletedFailsWhenJobIsNotRunning() {
         // A repository that is still PENDING (never started)
-        IndexedRepository pending = new IndexedRepository("spring-projects", "spring-boot");
+        IndexedRepository pending = new IndexedRepository("alice", "spring-projects", "spring-boot");
         when(repositoryRepository.findById(1L)).thenReturn(Optional.of(pending));
 
         // Act and Assert:  a job that never started can't be completed.

@@ -28,7 +28,7 @@ class StuckJobRecoveryServiceTest {
     @Test
     void marksInterruptedJobsAsFailedWithAReason() {
         // Arrange: one job that was left RUNNING when the service stopped.
-        IndexedRepository stuck = new IndexedRepository("octocat", "Hello-World");
+        IndexedRepository stuck = new IndexedRepository("alice","octocat", "Hello-World");
         stuck.setStatus(IndexingStatus.RUNNING);
         when(repositoryRepository.findByStatus(IndexingStatus.RUNNING)).thenReturn(List.of(stuck));
 

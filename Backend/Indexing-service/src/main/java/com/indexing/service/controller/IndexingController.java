@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/indexing/repositories")
 public class IndexingController {
 
+    // The header the gateway sets after it checks the session.
+    static final String USER_HEADER = "X-DevPilot-User";
+
     private final IndexingJobService indexingJobService;
     private final IndexingRunnerService indexingRunnerService;
 
@@ -26,9 +29,10 @@ public class IndexingController {
     // Marks the job RUNNING, starts the background work, and returns right away with 202.
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public IndexingStatusResponse start(@Valid @RequestBody StartIndexingRequest request) {
+    public IndexingStatusResponse start(@RequestHeader(USER_HEADER) String userLogin,
+                                        @Valid @RequestBody StartIndexingRequest request) {
         // Save the RUNNING status first. The background job then sees a committed row.
-        IndexedRepository repo = indexingJobService.startIndexing(request.githubOwner(), request.repoName());
+        IndexedRepository repo = indexingJobService.startIndexing(userLogin, request.githubOwner(), request.repoName());
 
         // Start the background work. This call returns immediately because of @Async
         indexingRunnerService.run(repo.getId(), request.githubOwner(), request.repoName());
@@ -38,8 +42,10 @@ public class IndexingController {
 // ------ GET -> /api/indexing/repositories/{githubOwner}/{repoName} ------
     // Returns the current status
     @GetMapping("/{githubOwner}/{repoName}")
-    public IndexingStatusResponse status(@PathVariable("githubOwner") String githubOwner, @PathVariable("repoName") String repoName) {
-        IndexedRepository repo = indexingJobService.getStatus(githubOwner, repoName);
+    public IndexingStatusResponse status(@RequestHeader(USER_HEADER) String userLogin,
+                                         @PathVariable("githubOwner") String githubOwner,
+                                         @PathVariable("repoName") String repoName) {
+        IndexedRepository repo = indexingJobService.getStatus(userLogin, githubOwner, repoName);
         return IndexingStatusResponse.from(repo);
     }
 }

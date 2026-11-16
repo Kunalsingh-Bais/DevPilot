@@ -2,6 +2,7 @@ package com.indexing.service.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
@@ -14,6 +15,11 @@ public class IndexedRepository {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    // The GitHub login of the user who indexed this repository.
+    @Getter
+    @Column(name = "user_login", nullable = false, length = 100, updatable = false)
+    private String userLogin;
 
     @Column(name = "github_Owner", nullable = false, length = 100)
     private String githubOwner;
@@ -38,7 +44,8 @@ public class IndexedRepository {
     private Instant createdAt;
 
     // Constructor
-    public IndexedRepository(String githubOwner, String repoName) {
+    public IndexedRepository(String userLogin, String githubOwner, String repoName) {
+        this.userLogin = userLogin;
         this.githubOwner = githubOwner;
         this.repoName = repoName;
         this.status = IndexingStatus.PENDING;

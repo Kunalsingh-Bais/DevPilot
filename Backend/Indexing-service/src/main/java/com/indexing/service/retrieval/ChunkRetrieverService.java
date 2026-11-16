@@ -21,7 +21,8 @@ public class ChunkRetrieverService {
                    c.embedding <=> ?::vector AS distance
             FROM code_chunks c
             JOIN repositories r ON r.id = c.repository_id
-            WHERE r.github_owner = ?
+            WHERE r.user_login = ?
+              AND r.github_owner = ?
               AND r.repo_name = ?
             ORDER BY c.embedding <=> ?::vector
             LIMIT ?
@@ -37,7 +38,7 @@ public class ChunkRetrieverService {
     }
 
 // ------ Returns up to "limit" chunks from one repository, closest to the question first ------
-    public List<RetrievedChunk> search(String githubOwner, String repoName, String question, int limit) {
+    public List<RetrievedChunk> search(String userLogin, String githubOwner, String repoName, String question, int limit) {
         // Check the input before calling the embedding model, which costs time.
         if (question == null || question.isBlank()) {
             throw new IllegalArgumentException("question must not be empty");
@@ -55,7 +56,7 @@ public class ChunkRetrieverService {
         float[] queryVector = embeddingProvider.embed(List.of(question.trim())).get(0);
         String vectorText = VectorText.toLiteral(queryVector);
 
-        // The "?" marks are filled in order: vector, owner, name, vector again, limit.
+        // The "?" marks are filled in order: vector, userLogin, owner, name, vector again, limit.
         return jdbcTemplate.query(
                 SEARCH_SQL,
                 (rs, rowNum) -> new RetrievedChunk(
@@ -65,7 +66,7 @@ public class ChunkRetrieverService {
                         rs.getInt("end_line"),
                         rs.getString("content"),
                         rs.getDouble("distance")),
-                vectorText, githubOwner, repoName, vectorText, limit
+                vectorText, userLogin, githubOwner, repoName, vectorText, limit
         );
     }
 }

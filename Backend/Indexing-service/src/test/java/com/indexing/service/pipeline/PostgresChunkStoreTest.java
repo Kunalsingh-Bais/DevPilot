@@ -41,7 +41,7 @@ class PostgresChunkStoreTest {
     @BeforeEach
     void createTestRepository() {
         String name = "store-test-" + UUID.randomUUID().toString().substring(0, 8);
-        testRepo = indexedRepositoryRepository.save(new IndexedRepository("devpilot-test", name));
+        testRepo = indexedRepositoryRepository.save(new IndexedRepository("alice", "devpilot-test", name));
     }
 
     // Deleting the repository also deletes its chunks, because the V1 migration uses ON DELETE CASCADE

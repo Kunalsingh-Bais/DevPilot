@@ -17,6 +17,9 @@ public interface IndexedRepositoryRepository extends JpaRepository<IndexedReposi
     // Returns true if this owner/name pair is already in the table
     boolean existsByGithubOwnerAndRepoName(String githubOwner, String repoName);
 
+    // Finds one user's copy of a GitHub repository. Other users' copies are never returned.
+    Optional<IndexedRepository> findByUserLoginAndGithubOwnerAndRepoName(String userLogin, String githubOwner, String repoName);
+
     // Returns every repository with the given status. Used at startup to find jobs left RUNNING
     List<IndexedRepository> findByStatus(IndexingStatus status);
 }

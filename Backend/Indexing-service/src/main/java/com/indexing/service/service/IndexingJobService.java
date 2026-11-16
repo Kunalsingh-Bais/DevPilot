@@ -21,10 +21,10 @@ public class IndexingJobService {
 
     // Starts indexing for a GitHub repository
     @Transactional
-    public IndexedRepository startIndexing(String githubOwner, String repoName) {
+    public IndexedRepository startIndexing(String userLogin, String githubOwner, String repoName) {
         // Find the existing repository, or create a new one (which starts as PENDING)
-        IndexedRepository repo = indexedRepositoryRepository.findByGithubOwnerAndRepoName(githubOwner, repoName)
-                .orElseGet(() -> new IndexedRepository(githubOwner, repoName));
+        IndexedRepository repo = indexedRepositoryRepository.findByUserLoginAndGithubOwnerAndRepoName(userLogin, githubOwner, repoName)
+                .orElseGet(() -> new IndexedRepository(userLogin, githubOwner, repoName));
 
         // Check whether repository already being indexed (or already running)
         if (repo.getStatus() == IndexingStatus.RUNNING) {
@@ -66,8 +66,8 @@ public class IndexingJobService {
 
     // Returns the current indexing status for one repository
     @Transactional(readOnly = true)
-    public IndexedRepository getStatus(String githubOwner, String repoName) {
-        return indexedRepositoryRepository.findByGithubOwnerAndRepoName(githubOwner, repoName)
+    public IndexedRepository getStatus(String userLogin, String githubOwner, String repoName) {
+        return indexedRepositoryRepository.findByUserLoginAndGithubOwnerAndRepoName(userLogin, githubOwner, repoName)
                 .orElseThrow(() -> new NoSuchElementException("No indexing record for " + githubOwner + "/" + repoName));
     }
 

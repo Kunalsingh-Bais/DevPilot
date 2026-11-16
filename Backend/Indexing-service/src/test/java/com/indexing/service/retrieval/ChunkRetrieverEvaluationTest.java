@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 @SpringBootTest
 class ChunkRetrieverEvaluationTest {
 
+    private static final String EVAL_USER = "Kunalsingh-Bais";
     private static final String GITHUB_OWNER = "spring-projects";
     private static final String REPO_NAME = "spring-petclinic";
 
@@ -53,7 +54,7 @@ class ChunkRetrieverEvaluationTest {
         StringBuilder report = new StringBuilder();
 
         for (EvalCase evalCase : cases) {
-            List<RetrievedChunk> results = chunkRetrieverService.search(GITHUB_OWNER, REPO_NAME, evalCase.question(), TOP_K);
+            List<RetrievedChunk> results = chunkRetrieverService.search(EVAL_USER,GITHUB_OWNER, REPO_NAME, evalCase.question(), TOP_K);
 
             int rank = 0;
             for (int i=0; i<results.size(); i++) {
