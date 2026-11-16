@@ -1,0 +1,25 @@
+<main class="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-slate-100">
+  <div class="w-full mx-w-sm space-y-6 rounded-xl border border-slate-800 bg-slate-900 p-8 text-center">
+
+    <div>
+      <h1 class="text-2xl font-bold">Devpilot</h1> 
+      <p class="mt-2 text-sm text-slate-400">
+        Ask questions about a GitHub repository, and see the code behind every answer.
+      </p>    
+    </div>
+
+    @if (failed) {
+      <p class="rounded-md border border-red-800 bg-red-950 p-3 text-sm text-red-200">
+        GitHub sign-in did not complete. Please try again.
+      </p>
+    }
+
+    <button type="button" (click)="auth.login()" class="w-full rounded-md bg-indigo-600 px-4 py-2 font-medium hover:bg-indigo-500">
+      Sign in with GitHub
+    </button>
+
+    <p class="text-xs text-slate-500">
+      devPilot requests only your public profile. It does not access your repositories.  
+    </p>
+  </div>
+</main>
