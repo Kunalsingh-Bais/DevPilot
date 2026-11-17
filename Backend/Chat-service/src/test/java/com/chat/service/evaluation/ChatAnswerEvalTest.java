@@ -31,6 +31,8 @@ class ChatAnswerEvalTest {
     private static final String OWNER = "spring-projects";
     private static final String REPO = "spring-petclinic";
 
+    private static final String EVAL_USER = "Kunalsingh-Bais";
+
     // The goal matches the retrieval eval. Change it only with a written reason.
     private static final int MIN_HITS = 8;
 
@@ -63,6 +65,7 @@ class ChatAnswerEvalTest {
             try {
                 response = client.post()
                         .uri("/api/chat/ask")
+                        .header("X-DevPilot-User", EVAL_USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(new AskRequest(OWNER, REPO, evalCase.question()))
                         .retrieve()

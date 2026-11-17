@@ -17,6 +17,8 @@ import java.util.NoSuchElementException;
 @Component
 public class IndexingServiceClient {
 
+    static final String USER_HEADER = "X-DevPilot-User";
+
     private final RestClient restClient;
 
     // Constructor injection: Spring passes in the client built in IndexingServiceConfig.
@@ -25,19 +27,21 @@ public class IndexingServiceClient {
     }
 
 // ------ Returns the indexing status of one repository, including the commit it was indexed from ------
-    public RepositoryStatus getStatus(String githubOwner, String repoName) {
+    public RepositoryStatus getStatus(String userLogin, String githubOwner, String repoName) {
         return call(() -> restClient.get()
                       .uri("api/indexing/repositories/{githubOwner}/{repoName}", githubOwner, repoName)
+                      .header(USER_HEADER, userLogin)
                       .retrieve()
                       .body(RepositoryStatus.class),
                 "Repository not found: " + githubOwner + "/" + repoName);
     }
 
 // ------ Returns the chunks closest in meaning to the question, closest first ------
-    public List<SearchHit> search(String githubOwner, String repoName, String question, int limit) {
+    public List<SearchHit> search(String userLogin, String githubOwner, String repoName, String question, int limit) {
         return call(() -> restClient.get()
                       .uri("api/indexing/repositories/{githubOwner}/{repoName}/search?question={question}&limit={limit}",
                               githubOwner, repoName, question, limit)
+                      .header(USER_HEADER, userLogin)
                       .retrieve()
                       .body(new ParameterizedTypeReference<List<SearchHit>>() {}),
                 "Repository not found: " + githubOwner + "/" + repoName);

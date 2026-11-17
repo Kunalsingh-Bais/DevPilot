@@ -33,7 +33,7 @@ public class AnswerService {
         this.llmClient = llmClient;
     }
 
-    public AskResponse ask(String githubOwner, String repoName, String question) {
+    public AskResponse ask(String userLogin, String githubOwner, String repoName, String question) {
         // Step 1: Check the input before doing any expensive work
         if (question == null || question.isBlank()) {
             throw new IllegalArgumentException("question must not be empty");
@@ -46,7 +46,7 @@ public class AnswerService {
         String trimmed = question.trim();
 
         // Step 2: Check repository indexing status
-        RepositoryStatus status = indexingServiceClient.getStatus(githubOwner, repoName);
+        RepositoryStatus status = indexingServiceClient.getStatus(userLogin, githubOwner, repoName);
 
         if (!"COMPLETED".equals(status.status())) {
             throw new IllegalStateException(
@@ -54,7 +54,7 @@ public class AnswerService {
         }
 
         // Step 3: find the closest code chunks
-        List<SearchHit> hits = indexingServiceClient.search(githubOwner, repoName, trimmed, TOP_K);
+        List<SearchHit> hits = indexingServiceClient.search(userLogin, githubOwner, repoName, trimmed, TOP_K);
 
         // if nothing was found, say so without calling the model
         if (hits.isEmpty()) {

@@ -26,29 +26,31 @@ class AnswerServiceTest {
     private static final String SHA = "a".repeat(40);
     private static final String QUESTION = "Where are owners saved?";
 
+    private static final String USER = "alice";
+
     // A fake indexing-service client. No network is used.
     @Mock
     private IndexingServiceClient indexingServiceClient;
 
     @Test
     void rejectsRepositoryThatIsNotCompleted() {
-        when(indexingServiceClient.getStatus(GITHUB_OWNER, REPO_NAME))
+        when(indexingServiceClient.getStatus(USER,GITHUB_OWNER, REPO_NAME))
                 .thenReturn(new RepositoryStatus(1L, GITHUB_OWNER, REPO_NAME, "RUNNING", null, null));
 
         AnswerService service = new AnswerService(indexingServiceClient, (systemRules, userMessage) -> "unused");
 
-        assertThatThrownBy(() -> service.ask(GITHUB_OWNER, REPO_NAME, QUESTION))
+        assertThatThrownBy(() -> service.ask(USER,GITHUB_OWNER, REPO_NAME, QUESTION))
                 .isInstanceOf(IllegalStateException.class);
 
-        verify(indexingServiceClient, never()).search(any(), any(), any(), anyInt());
+        verify(indexingServiceClient, never()).search(any(), any(), any(), any(), anyInt());
     }
 
     @Test
     void returnsNotFoundWithoutCallingTheModelWhenNothingMatches() {
-        when(indexingServiceClient.getStatus(GITHUB_OWNER, REPO_NAME))
+        when(indexingServiceClient.getStatus(USER, GITHUB_OWNER, REPO_NAME))
                 .thenReturn(new RepositoryStatus(1L, GITHUB_OWNER, REPO_NAME, "COMPLETED", SHA, null));
 
-        when(indexingServiceClient.search(GITHUB_OWNER, REPO_NAME, QUESTION, 8))
+        when(indexingServiceClient.search(USER, GITHUB_OWNER, REPO_NAME, QUESTION, 8))
                 .thenReturn(List.of());
 
         AtomicBoolean modelCalled = new AtomicBoolean(false);
@@ -57,7 +59,7 @@ class AnswerServiceTest {
             return "should not be used";
         });
 
-        AskResponse response = service.ask(GITHUB_OWNER, REPO_NAME, QUESTION);
+        AskResponse response = service.ask(USER, GITHUB_OWNER, REPO_NAME, QUESTION);
 
         assertThat(response.answer()).isEqualTo(PromptBuilder.NOT_FOUND_TEXT);
         assertThat(response.citations()).isEmpty();
@@ -66,10 +68,10 @@ class AnswerServiceTest {
 
     @Test
     void removesInventedCitationsAndLinksRealOnesToTheCommit() {
-        when(indexingServiceClient.getStatus(GITHUB_OWNER, REPO_NAME))
+        when(indexingServiceClient.getStatus(USER, GITHUB_OWNER, REPO_NAME))
                 .thenReturn(new RepositoryStatus(1L, GITHUB_OWNER, REPO_NAME, "COMPLETED", SHA, null));
 
-        when(indexingServiceClient.search(GITHUB_OWNER, REPO_NAME, QUESTION, 8)).thenReturn(List.of(
+        when(indexingServiceClient.search(USER, GITHUB_OWNER, REPO_NAME, QUESTION, 8)).thenReturn(List.of(
                 new SearchHit(1L, "src/OwnerController.java", 84, 131, "code A", 0.38),
                 new SearchHit(2L, "src/OwnerRepository.java", 1, 39, "code B", 0.36)));
 
@@ -78,7 +80,7 @@ class AnswerServiceTest {
                 "Owners are saved in the controller [C1]. An invented source [C9].");
         AnswerService service = new AnswerService(indexingServiceClient, fakeModel);
 
-        AskResponse response = service.ask(GITHUB_OWNER, REPO_NAME, QUESTION);
+        AskResponse response = service.ask(USER, GITHUB_OWNER, REPO_NAME, QUESTION);
 
         assertThat(response.answer()).contains("[C1]").doesNotContain("[C9]");
         assertThat(response.commitSha()).isEqualTo(SHA);
