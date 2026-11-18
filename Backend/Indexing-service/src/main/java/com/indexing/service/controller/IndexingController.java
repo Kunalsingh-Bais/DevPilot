@@ -9,6 +9,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/indexing/repositories")
 public class IndexingController {
@@ -47,5 +49,14 @@ public class IndexingController {
                                          @PathVariable("repoName") String repoName) {
         IndexedRepository repo = indexingJobService.getStatus(userLogin, githubOwner, repoName);
         return IndexingStatusResponse.from(repo);
+    }
+
+// ------ GET -> /api/indexing/repositories
+    // Lists every repository the signed-in user has indexed, with its status
+    @GetMapping
+    public List<IndexingStatusResponse> list(@RequestHeader(USER_HEADER) String userLogin) {
+        return indexingJobService.listForUser(userLogin).stream()
+                .map(IndexingStatusResponse::from)
+                .toList();
     }
 }

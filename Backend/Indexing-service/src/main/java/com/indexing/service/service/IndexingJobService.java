@@ -7,6 +7,7 @@ import com.indexing.service.repository.IndexedRepositoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -84,5 +85,11 @@ public class IndexingJobService {
         if (repo.getStatus() != expected) {
             throw new IllegalStateException("Expected status " + expected + " but found " + repo.getStatus());
         }
+    }
+
+    // Returns the repositories that belong to one user.
+    @Transactional(readOnly = true)
+    public List<IndexedRepository> listForUser(String userLogin) {
+        return indexedRepositoryRepository.findByUserLoginOrderByCreatedAtDesc(userLogin);
     }
 }

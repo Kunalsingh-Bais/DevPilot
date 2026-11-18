@@ -22,4 +22,7 @@ public interface IndexedRepositoryRepository extends JpaRepository<IndexedReposi
 
     // Returns every repository with the given status. Used at startup to find jobs left RUNNING
     List<IndexedRepository> findByStatus(IndexingStatus status);
+
+    // Returns every repository this user has indexed, newest first.
+    List<IndexedRepository> findByUserLoginOrderByCreatedAtDesc(String userLogin);
 }
