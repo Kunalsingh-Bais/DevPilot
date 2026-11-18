@@ -1,9 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ChatService } from '../../services/chat.service';
 import { AskResponse } from '../../models/chat.models';
 import { HttpErrorResponse } from '@angular/common/http';
 
+// The question panel. It asks about the repository the dashboard selected.
 @Component({
   selector: 'app-chat.component',
   standalone: true,
@@ -15,18 +16,12 @@ export class ChatComponent {
 
   private readonly chat = inject(ChatService);
 
-  // The form has three fields. nonNullable keeps their values as plain strings, never null.
+  // The repository to ask about. The dashboard sets these, so the user never types them here.
+  readonly githubOwner = input.required<string>();
+  readonly repoName = input.required<string>();
+
+  // The form has one fields. nonNullable keeps their values as plain strings, never null.
   readonly form = new FormGroup({
-    githubOwner: new FormControl('spring-projects', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
-
-    repoName: new FormControl('spring-petclinic', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
-
     question: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.maxLength(1000)],
@@ -47,18 +42,14 @@ export class ChatComponent {
     }
 
     // Read the values and remove extra spaces before sending.
-    const { githubOwner, repoName, question } = this.form.getRawValue();
+    const question = this.form.controls.question.value.trim();
 
     // Reset the screen for the new question.
     this.loading.set(true);
     this.error.set(null);
     this.response.set(null);
 
-    this.chat.ask({
-      githubOwner: githubOwner.trim(),
-      repoName: repoName.trim(),
-      question: question.trim()
-    }).subscribe({
+    this.chat.ask({ githubOwner: this.githubOwner(), repoName: this.repoName(), question }).subscribe({
       next: (result) => {
         this.response.set(result);
         this.loading.set(false);
@@ -82,7 +73,7 @@ export class ChatComponent {
 
       // Status 0 or a proxy error usually means the backend service is not running.
       if (err.status === 0 || err.status === 500 || err.status === 504) {
-        return 'chat-service is not reachable. Start it on port 8083, along with indexing-service and Ollama.';
+        return 'chat-service is not reachable. Check that the gateway and the backend services are running.';
       }
     }
 
