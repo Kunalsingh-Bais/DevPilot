@@ -6,7 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 // The question panel. It asks about the repository the dashboard selected.
 @Component({
-  selector: 'app-chat.component',
+  selector: 'app-chat',
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './chat.component.html',
