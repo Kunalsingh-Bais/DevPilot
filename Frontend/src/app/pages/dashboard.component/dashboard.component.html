@@ -1,0 +1,104 @@
+<main class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="mx-auto max-w-4xl space-y-8 px-4 py-10">
+    
+    <header>
+      <h1 class="text-3xl font-bold">Dashboard</h1>
+      <p class="text-slate-400">
+        Index a public GitHub repository once, then ask questions about its code.
+      </p>
+    </header>
+
+    <section class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+      <h2 class="mb-1 text-xl font-semibold">Index a repository</h2>
+      <p class="mb-4 text-sm text-slate-400">
+        Indexing takes a few minutes for a repository.
+      </p>
+
+      <form [formGroup]="form" (ngSubmit)="indexTyped()" 
+            class="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+
+        <label class="block">
+          <span class="text-sm text-slate-300">GitHub Owner</span>
+          <input formControlName="githubOwner" class="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2" />
+        </label>
+
+        <label class="block">
+          <span class="text-sm text-slate-300">Repository name</span>
+          <input formControlName="repoName" class="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2" />
+        </label>
+
+        <button type="submit" [disabled]="busy()"
+            class="rounded-md bg-indigo-600 px-5 py-2 font-medium hover:bg-indigo-500 disabled:opacity-50">
+          {{ busy() ? 'Starting...': 'Index' }}  
+        </button>
+      </form>
+    </section>
+
+    @if (message()) {
+      <div class="rounded-md border border-red-800 bg-red-950 p-4 text-red-200">{{ message() }}</div>
+    }
+
+    <section class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+      <h2 class="mb-4 text-xl font-semibold">Your repositories</h2>
+
+      @if (repos().length === 0) {
+        <p class="text-slate-400">You have not indexed any repository yet. Use the form above to start.</p>
+      }
+
+      <ul class="space-y-2">
+        @for (r of repos(); track r.id) {
+          <li class="flex items-center justify-between">
+            <button type="button" (click)="openRepo(r.githubOwner, r.repoName)" class="text-indigo-300 hover:underline">
+              {{ r.githubOwner}}/{{ r.repoName }}
+            </button>
+
+            <span class="rounded bg-slate-800 px-2 py-0.5 text-xs">{{ r.status}}</span>
+          </li>
+        }
+      </ul>
+    </section>
+
+    @if (selected(); as sel) {
+      <section class="space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6">
+        <h2 class="text-xl font-semibold">{{ sel.githubOwner }}/{{ sel.repoName }}</h2>
+
+        @if (!checked()) {
+          <p class="text-slate-400">This repository is not indexed yet.</p>
+          <button type="button" [disabled]="busy()" (click)="start(sel.githubOwner, sel.repoName)" class="rounded-md bg-indigo-600 px-4 py-2 hover:bg-indigo-500 disabled:opacity-50">
+            Start indexing
+          </button>
+        } 
+
+        @else if (status()?.status === 'PENDING' || status()?.status === 'RUNNING') {
+          <p class="text-slate-300">
+            Indexing in progress. This page update automatically, and it can take a few minutes.
+          </p>        
+        }
+
+        @else if (status()?.status === 'FAILED') {
+          <p class="text-300-red">
+            Indexing failed: {{ status()?.errorMessage }}
+          </p>
+
+          <button type="button" [disabled]="busy()" (click)="start(sel.githubOwner, sel.repoName)" class="rounded-md bg-indigo-600 px-4 py-2 hover:bg-indigo-500 disabled:opacity-50">
+            Try again
+          </button>
+        }
+
+        @else if (status()?.status === 'COMPLETED') {
+          <p class="text-emerald-300">
+            Ready. Indexed at commit {{ status()?.commitSha }}
+          </p>
+
+          <button type="button" [disabled]="busy()" (click)="start(sel.githubOwner, sel.repoName)" class="rounded-md border border-slate-700 px-4 py-2 hover:bg-slate-800 disabled:opacity-50">
+            Re-index
+          </button>
+        }
+      </section>
+
+      @if (status()?.status === 'COMPLETED') {
+        <app-chat [githubOwner]="sel.githubOwner" [repoName]="sel.repoName" />
+      }
+    }
+  </div>
+</main>
