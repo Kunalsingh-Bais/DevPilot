@@ -102,7 +102,7 @@ The hybrid experiment is kept in git history, so the revert is visible. A 10-que
     - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` for auth-service
 4. **Start the services**, in this order: `repo-service` (8081), `indexing-service` (8082), `chat-service` (8083), `auth-service` (8084), `api-gateway` (8095).
 5. **Start the frontend.** From `frontend/`, run `ng serve`, then open `http://localhost:4200`.
-6. **Sign in**, enter a public repository such as `spring-projects` / `spring-petclinic`, click **Index**, wait for `COMPLETED`, then ask a question.
+6. **Sign in**, then on the dashboard type an githubOwner and repository name click **Index**. Wait until the status shows Ready, then ask a question. Repositories you index stay in your list after a refresh.
 
 ## Testing
 
