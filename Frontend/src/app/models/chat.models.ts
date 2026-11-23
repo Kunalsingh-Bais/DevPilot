@@ -30,4 +30,5 @@ export interface AskResponse {
     commitSha: string;
     citations: Citation[];
     sources: Source[];
+    grounded: boolean
 }
