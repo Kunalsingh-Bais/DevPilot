@@ -58,7 +58,7 @@ public class AnswerService {
 
         // if nothing was found, say so without calling the model
         if (hits.isEmpty()) {
-            return new AskResponse(PromptBuilder.NOT_FOUND_TEXT, status.commitSha(), List.of(), List.of());
+            return new AskResponse(PromptBuilder.NOT_FOUND_TEXT, status.commitSha(), List.of(), List.of(), false);
         }
 
         // Step 4: label the chunks C1, C2, ... in the order they were found
@@ -99,7 +99,8 @@ public class AnswerService {
                         usedLabels.contains(l.label())))
                 .toList();
 
-        return new AskResponse(validated.text(), status.commitSha(), citations, sources);
+        boolean grounded = !citations.isEmpty();
+        return new AskResponse(validated.text(), status.commitSha(), citations, sources, grounded);
     }
 
     // Finds the chunk that carries a given label. The label always exists, because we validated it.

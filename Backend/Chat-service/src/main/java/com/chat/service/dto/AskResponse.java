@@ -7,7 +7,8 @@ public record AskResponse(
         String answer,
         String commitSha,
         List<Citation> citations,
-        List<Source> sources
+        List<Source> sources,
+        boolean grounded
 ) {
 
     // One cited location, with a link to the exact lines on GitHub.
